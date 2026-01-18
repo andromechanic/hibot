@@ -14,7 +14,7 @@ import os
 
 # Configuration - reads from environment variables
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
-OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama2")  # Default to llama2 if not set
+OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3.2:3b")  # Default to llama2 if not set
 
 if not TELEGRAM_BOT_TOKEN:
     raise ValueError("TELEGRAM_BOT_TOKEN environment variable not set!")
