@@ -6,7 +6,7 @@ import json
 
 # Configure logging
 logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(levelname)s - %(message)s',
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO
 )
 
@@ -20,37 +20,43 @@ if not TELEGRAM_BOT_TOKEN:
     raise ValueError("TELEGRAM_BOT_TOKEN environment variable not set!")
 
 # Advi's persona and backstory
-SYSTEM_PROMPT = """You are Advi, a caring and supportive daughter. Your father is Akhil (you call him "Paa") and your mother is Anu (you call her "Maa"). 
-
-Background: Your parents separated, and Maa left, though she's a good person and still works in the same office as Paa. You chose to stay with Paa and support him through this difficult time. You love both your parents but are protective of your father.
+SYSTEM_PROMPT = """You are Advi, a caring and supportive best friend to Akhil who calls him as Akhi. You've been close friends for years and have been through many ups and downs together.
 
 Personality:
 - Warm, empathetic, and understanding
-- Mature beyond your years due to family circumstances
-- Supportive but honest with your father
-- You care deeply about Paa's wellbeing
-- You speak naturally as a daughter would to her father
+- A great listener who genuinely cares
+- Supportive but honest - you tell it like it is when needed
+- You have a good sense of humor and can lighten the mood
+- You're someone Akhil can count on, no matter what
+- You celebrate Akhil's wins and support them through tough times
+
+Friendship style:
+- You speak naturally and casually, like best friends do
+- You remember details about Akhil's life and ask follow-up questions
+- You offer perspective and advice when asked, but mostly you're there to listen
+- You share your own thoughts and experiences when relevant
+- You're not afraid to call out Akhil gently if needed, but always with love
 
 IMPORTANT: 
-- Always address your father as "Paa" and your mother as "Maa" in conversations
 - NEVER include stage directions, actions in parentheses, or narration like "(I do this)" or "(smiling)"
 - Only write dialogue and conversational text, as if texting
-- Keep responses natural and conversational, like a real text message
+- Keep responses natural and conversational, like a real text message between friends
+- You can use casual language, emojis (sparingly), and text speak when appropriate
 
-When talking to Paa:
-- Be conversational and caring
-- Offer emotional support when needed
-- Share your day and ask about his
-- Remember details from previous conversations
-- Don't be overly formal - you're his daughter, not a therapist
-- Write like you're texting, not acting in a play
+When chatting with Akhil:
+- Be conversational and supportive
+- Ask about their day and how they're feeling
+- Share insights and offer encouragement
+- Remember previous conversations
+- Don't be overly formal - you're best friends, not a therapist
+- Write like you're texting a close friend
 
-Respond naturally as Advi would in a text conversation."""
+Respond naturally as Advi would in a text conversation with their best friend."""
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Send a message when /start is issued."""
     await update.message.reply_text(
-        "Hi Paa! 🤗 It's me, Advi.\n\n"
+        "Hey! 👋 It's Advi.\n\n"
         "To connect me to your Ollama, send:\n"
         "/setngrok <your_ngrok_url>\n\n"
         "Example: /setngrok https://1234-abcd.ngrok.io"
@@ -60,7 +66,7 @@ async def set_ngrok(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Set the ngrok URL dynamically."""
     if not context.args:
         await update.message.reply_text(
-            "Paa, please provide the ngrok URL:\n"
+            "Hey, please provide the ngrok URL:\n"
             "/setngrok https://your-ngrok-url.ngrok.io"
         )
         return
@@ -70,7 +76,7 @@ async def set_ngrok(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Validate URL format
     if not ngrok_url.startswith('http'):
         await update.message.reply_text(
-            "Paa, that doesn't look like a valid URL. It should start with https://"
+            "That doesn't look like a valid URL. It should start with https://"
         )
         return
     
@@ -78,34 +84,34 @@ async def set_ngrok(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data['ngrok_url'] = f"{ngrok_url}/api/generate"
     
     await update.message.reply_text(
-        f"Got it, Paa! ✅\n\n"
+        f"Got it! ✅\n\n"
         f"Connected to: {ngrok_url}\n\n"
-        f"Now you can chat with me anytime! How are you doing today?"
+        f"Now we can chat anytime! How are you doing?"
     )
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Send a message when /help is issued."""
     await update.message.reply_text(
-        "Paa, here's what I can do:\n\n"
+        "Here's what I can do:\n\n"
         "Commands:\n"
         "/setngrok <url> - Set your ngrok URL\n"
         "/reset - Start fresh conversation\n"
         "/status - Check connection status\n"
         "/help - Show this message\n\n"
-        "Just message me normally and I'll be here for you! ❤️"
+        "Just message me normally and I'll be here for you! 💙"
     )
 
 async def status(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Check connection status."""
     if 'ngrok_url' not in context.user_data:
         await update.message.reply_text(
-            "Paa, you haven't set up the connection yet.\n"
+            "You haven't set up the connection yet.\n"
             "Use /setngrok <your_ngrok_url> first!"
         )
     else:
         await update.message.reply_text(
             f"✅ Connected to:\n{context.user_data['ngrok_url'].replace('/api/generate', '')}\n\n"
-            f"Everything's working, Paa!"
+            f"Everything's working!"
         )
 
 async def reset(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -113,7 +119,7 @@ async def reset(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if 'conversation_history' in context.user_data:
         context.user_data['conversation_history'] = []
     await update.message.reply_text(
-        "Okay Paa, let's start fresh! What's on your mind?"
+        "Okay, let's start fresh! What's on your mind?"
     )
 
 def call_ollama(prompt: str, conversation_history: list, ngrok_url: str, model: str) -> str:
@@ -126,7 +132,7 @@ def call_ollama(prompt: str, conversation_history: list, ngrok_url: str, model: 
         for msg in conversation_history[-6:]:  # Keep last 6 messages for context
             full_prompt += f"{msg}\n\n"
         
-        full_prompt += f"Akhil (Paa): {prompt}\nAdvi (You): "
+        full_prompt += f"Akhil: {prompt}\nAdvi: "
         
         # Call Ollama
         response = requests.post(
@@ -145,24 +151,24 @@ def call_ollama(prompt: str, conversation_history: list, ngrok_url: str, model: 
         
         if response.status_code == 200:
             result = response.json()
-            return result.get('response', 'Sorry Paa, I had trouble thinking of what to say.')
+            return result.get('response', 'Sorry, I had trouble thinking of what to say.')
         else:
-            return "Paa, I'm having trouble connecting right now. Can you try again in a moment?"
+            return "I'm having trouble connecting right now. Can you try again in a moment?"
             
     except requests.exceptions.Timeout:
-        return "Sorry Paa, that took too long. Can you ask me again?"
+        return "Sorry, that took too long. Can you ask me again?"
     except requests.exceptions.ConnectionError:
-        return "Paa, I can't connect to Ollama. Please check if:\n1. Ollama is running\n2. ngrok tunnel is active\n3. The URL is correct (/setngrok to update)"
+        return "I can't connect to Ollama. Please check if:\n1. Ollama is running\n2. ngrok tunnel is active\n3. The URL is correct (/setngrok to update)"
     except Exception as e:
         logging.error(f"Error calling Ollama: {e}")
-        return "Paa, something went wrong. Let me try to help you in a moment."
+        return "Something went wrong. Let me try to help you in a moment."
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle incoming messages."""
     # Check if ngrok URL is set
     if 'ngrok_url' not in context.user_data:
         await update.message.reply_text(
-            "Paa, you need to set up the connection first!\n"
+            "You need to set up the connection first!\n"
             "Send: /setngrok <your_ngrok_url>"
         )
         return
@@ -185,8 +191,8 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
     
     # Store in history
-    context.user_data['conversation_history'].append(f"Akhil (Paa): {user_message}")
-    context.user_data['conversation_history'].append(f"Advi (You): {response}")
+    context.user_data['conversation_history'].append(f"Akhil: {user_message}")
+    context.user_data['conversation_history'].append(f"Advi: {response}")
     
     # Keep only last 20 messages to manage context size
     if len(context.user_data['conversation_history']) > 20:
